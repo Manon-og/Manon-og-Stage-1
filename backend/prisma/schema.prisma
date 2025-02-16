@@ -1,0 +1,53 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["sysdev_management"]
+}
+
+enum MembersTypeEnum {
+  BACKEND
+  FRONTEND
+  UIUX
+
+  @@schema("sysdev_management")  
+}
+
+model members {
+  id                String        @id @default(cuid())
+  name              String
+  role              MembersTypeEnum
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  deletedAt         DateTime?
+  projects          members_projects[]
+
+  @@schema("sysdev_management")  
+}
+
+model projects {
+  id                String        @id @default(cuid())
+  name              String
+  description       String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  members           members_projects[]
+
+  @@schema("sysdev_management")  
+}
+
+model members_projects {
+  id                String        @id @default(cuid())
+  projectId         String
+  project           projects      @relation(fields: [projectId], references: [id])
+  memberId          String
+  member            members       @relation(fields: [memberId], references: [id])
+  assignedAt        DateTime      @default(now())
+
+  @@unique([projectId, memberId])
+  @@schema("sysdev_management")  
+}
